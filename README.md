@@ -1,4 +1,4 @@
-# Utopia Clínica Médica 🏥
+# Utopia Clínica Médica 
 
 App mobile con Expo Router y React Native. Base de datos local con AsyncStorage.
 
@@ -46,9 +46,9 @@ utils/
 
 | Persona | Carpeta | Descripción |
 |---|---|---|
-| **Persona 1** | `app/admin/` | Todas las pantallas del administrador |
-| **Persona 2** | `app/medico/` | Todas las pantallas del médico |
-| **Persona 3** | `app/paciente/` | Todas las pantallas del paciente |
+| **Arlette** | `app/admin/` | Todas las pantallas del administrador |
+| **Ihan** | `app/medico/` | Todas las pantallas del médico |
+| **Adan & Osbaldo** | `app/paciente/` | Todas las pantallas del paciente |
 
 > Las pantallas de autenticación (`app/index.tsx`, `app/register.tsx`, etc.) y los archivos de `components/` y `utils/` son **compartidos**. Avisar al equipo antes de modificarlos.
 
