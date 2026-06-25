@@ -13,21 +13,21 @@ app/
 ├── confirmacion.tsx          # Confirmación
 ├── detalles-cita.tsx         # Detalle de cita
 │
-├── admin/                    ← Persona 1
+├── admin/                    ←  Arlette
 │   ├── index.tsx
 │   ├── admin-medicos.tsx
 │   ├── admin-citas.tsx
 │   ├── avisos.tsx
 │   └── perfil.tsx
 │
-├── medico/                   ← Persona 2
+├── medico/                   ← Ihan
 │   ├── index.tsx
 │   ├── agenda.tsx
 │   ├── pacientes.tsx
 │   ├── scanner.tsx
 │   └── perfil.tsx
 │
-└── paciente/                 ← Persona 3
+└── paciente/                 ← Adan & Osbaldo
     ├── index.tsx
     ├── agenda.tsx
     ├── agendar-cita.tsx
