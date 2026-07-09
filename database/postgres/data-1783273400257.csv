@@ -1,0 +1,7 @@
+"usuario_id","edad","direccion","sexo","fecha_nacimiento","tipo_sangre","alergias","contacto_emergencia","parentesco_emergencia","telefono_emergencia"
+"paciente-demo","25","Ciudad de México",NULL,NULL,"O+","Ninguna registrada","Familiar",NULL,"55 8765 4321"
+"e810cda0-6131-4bab-91d2-91714939aa3d",NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL
+"2bdfc264-157b-4209-8434-c37bee1aac6f","30","Calle Falsa 123","F","1993-01-01","A+","Ninguna","Familiar","Hermano","5550010"
+"802d1a26-c027-41d9-a6af-51b5cc9ca2af","25","Calle Test 123",NULL,NULL,NULL,NULL,NULL,NULL,NULL
+"8c06bdbe-460a-486c-907a-cad36057944b","28","Avenida Principal 456","Femenino","1998-05-15","O+","Penicilina","Juan Smith","Hermano","555-1111"
+"66fde55a-2bdb-4796-9d0d-8fa6488ff67d",NULL,NULL,"masculino","2025-07-18",NULL,NULL,"Erik Osbaldo","Venta","7222642530"

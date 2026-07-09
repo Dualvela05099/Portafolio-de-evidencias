@@ -1,27 +1,13 @@
-import React, { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { router } from "expo-router";
-import AppLogo from "@/components/AppLogo";
-import { colors } from "@/components/theme";
-import { guardarRegistroTemporal } from "@/utils/database";
+import React from "react";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import AppLogo from "@/components/ui/AppLogo";
+import { colors } from "@/constants/theme";
+import { useRegisterViewModel } from "@/viewmodels/useRegisterViewModel";
 
 export default function RegisterScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const next = async () => {
-    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
-      Alert.alert("Campos vacíos", "Completa todos los campos.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      Alert.alert("Error", "Las contraseñas no coinciden.");
-      return;
-    }
-    await guardarRegistroTemporal({ correo: email, email, password, rol: "paciente" });
-    router.push("/registro-datos");
-  };
+  const vm = useRegisterViewModel();
+  const barCount = 4;
+  const filledBars = Math.round((vm.passwordStrength.score / 5) * barCount);
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -29,23 +15,46 @@ export default function RegisterScreen() {
         <Text style={styles.topText}>Registro nuevo usuario</Text>
         <View style={styles.phoneCard}>
           <View style={styles.header}>
-            <TouchableOpacity style={styles.back} onPress={() => router.back()}><Text style={styles.backText}>←</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.back} onPress={vm.goBack}><Text style={styles.backText}>←</Text></TouchableOpacity>
             <AppLogo size={135} />
           </View>
           <View style={styles.card}>
             <Text style={styles.title}>¿Eres nuevo?</Text>
             <Text style={styles.subtitle}>Registra una nueva cuenta</Text>
-            <Text style={styles.label}>Correo electronico</Text>
-            <TextInput value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" style={styles.input} />
+            <Text style={styles.label}>Correo electrónico</Text>
+            <TextInput
+              value={vm.email}
+              onChangeText={vm.setEmail}
+              onEndEditing={vm.validateEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              style={styles.input}
+            />
+            {vm.emailError ? <Text style={styles.errorText}>{vm.emailError}</Text> : null}
             <Text style={styles.label}>Contraseña</Text>
-            <TextInput value={password} onChangeText={setPassword} placeholder="Ingresa una contraseña" placeholderTextColor="#8d96a3" secureTextEntry style={styles.input} />
-            <View style={styles.bars}><View style={styles.bar}/><View style={styles.bar}/><View style={styles.bar}/><View style={styles.bar}/></View>
+            <TextInput value={vm.password} onChangeText={vm.setPassword} placeholder="Ingresa una contraseña" placeholderTextColor="#8d96a3" secureTextEntry style={styles.input} />
+            <View style={styles.bars}>
+              {Array.from({ length: barCount }).map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.bar,
+                    index < filledBars ? { backgroundColor: vm.passwordStrength.color, borderColor: vm.passwordStrength.color } : {},
+                  ]}
+                />
+              ))}
+            </View>
+            <Text style={[styles.strengthLabel, { color: vm.passwordStrength.color }]}>Seguridad: {vm.passwordStrength.label}</Text>
+            <Text style={styles.strengthDetail}>Incluye mayúsculas, minúsculas, números y símbolos para una contraseña más segura.</Text>
             <Text style={styles.label}>Confirmar contraseña</Text>
-            <TextInput value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Ingresa tu contraseña de nuevo" placeholderTextColor="#8d96a3" secureTextEntry style={styles.input} />
-            <TouchableOpacity style={styles.button} onPress={next}><Text style={styles.buttonText}>Continuar</Text></TouchableOpacity>
+            <TextInput value={vm.confirmPassword} onChangeText={vm.setConfirmPassword} placeholder="Ingresa tu contraseña de nuevo" placeholderTextColor="#8d96a3" secureTextEntry style={styles.input} />
+            {vm.confirmPassword.length > 0 && vm.password !== vm.confirmPassword ? (
+              <Text style={styles.mismatchText}>Las contraseñas no coinciden.</Text>
+            ) : null}
+            <TouchableOpacity style={styles.button} onPress={vm.next}><Text style={styles.buttonText}>Continuar</Text></TouchableOpacity>
             <View style={styles.loginContainer}>
               <Text style={styles.loginText}>¿Ya tienes cuenta?</Text>
-              <TouchableOpacity onPress={() => router.replace("/")}><Text style={styles.loginLink}>Inicia sesión aquí</Text></TouchableOpacity>
+              <TouchableOpacity onPress={vm.goToLogin}><Text style={styles.loginLink}>Inicia sesión aquí</Text></TouchableOpacity>
             </View>
           </View>
         </View>
@@ -67,8 +76,11 @@ const styles = StyleSheet.create({
   subtitle: { color: colors.muted, fontSize: 16, marginTop: 8, marginBottom: 18 },
   label: { color: "#696969", fontSize: 15, marginLeft: 18, marginBottom: 8 },
   input: { height: 56, backgroundColor: colors.input, borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 16, fontSize: 15, color: colors.text, marginBottom: 18 },
-  bars: { flexDirection: "row", gap: 12, marginTop: -10, marginBottom: 16, paddingHorizontal: 10 },
+  bars: { flexDirection: "row", gap: 12, marginTop: -10, marginBottom: 10, paddingHorizontal: 10 },
   bar: { flex: 1, height: 5, borderRadius: 5, backgroundColor: "#e8eefb", borderWidth: 1, borderColor: "#d5dff2" },
+  strengthLabel: { marginTop: 4, marginBottom: 4, fontSize: 13, fontWeight: "700" },
+  strengthDetail: { color: colors.muted, fontSize: 12, marginBottom: 14, marginLeft: 4 },
+  errorText: { color: "#c0392b", fontSize: 13, marginLeft: 18, marginBottom: 10 },
   button: { height: 58, borderRadius: 12, backgroundColor: colors.teal, alignItems: "center", justifyContent: "center", marginTop: 8 },
   buttonText: { color: "white", fontSize: 18, fontWeight: "900" },
   loginContainer: { alignItems: "center", marginTop: 24 },

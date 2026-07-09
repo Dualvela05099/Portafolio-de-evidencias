@@ -1,5 +1,5 @@
 import React from "react";
-import EditableProfile from "@/components/EditableProfile";
+import EditableProfile from "@/components/common/EditableProfile";
 
 export default function PerfilMedico() {
   return (

@@ -1,63 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React from "react";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { colors } from "@/components/theme";
-import { actualizarCita, obtenerCitas, obtenerSesionActual } from "@/utils/database";
-
-const filters = ["Todas", "Próximas", "Completadas", "Canceladas"];
-
-type Cita = {
-  id: string;
-  especialidad?: string;
-  fecha?: string;
-  hora?: string;
-  estado?: string;
-  motivo?: string;
-};
+import { colors } from "@/constants/theme";
+import { useMisCitasViewModel } from "@/viewmodels/useMisCitasViewModel";
 
 export default function MisCitas() {
-  const [filter, setFilter] = useState("Todas");
-  const [citas, setCitas] = useState<Cita[]>([]);
-
-  const cargarCitas = async () => {
-    const sesion = await obtenerSesionActual();
-    const todas = await obtenerCitas();
-    const propias = todas.filter((c: any) => !sesion?.id || !c.pacienteId || c.pacienteId === sesion.id || c.pacienteNombre === sesion.name || c.pacienteNombre === sesion.nombre);
-    setCitas(propias);
-  };
-
-  useEffect(() => {
-    cargarCitas();
-  }, []);
-
-  const cancelar = async (id: string) => {
-    await actualizarCita(id, { estado: "Cancelada" });
-    await cargarCitas();
-    Alert.alert("Cita cancelada", "La cita fue marcada como cancelada en la base local.");
-  };
-
-  const filtered = citas.filter((c) => {
-    if (filter === "Todas") return true;
-    if (filter === "Canceladas") return c.estado === "Cancelada";
-    if (filter === "Completadas") return c.estado === "Completada";
-    return c.estado !== "Cancelada" && c.estado !== "Completada";
-  });
+  const vm = useMisCitasViewModel();
 
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}><Text style={styles.titleH}>Mis citas</Text></View>
         <View style={styles.filters}>
-          {filters.map((f) => (
-            <TouchableOpacity key={f} onPress={() => setFilter(f)} style={[styles.filter, filter === f && styles.filterA]}>
-              <Text style={[styles.filterT, filter === f && { color: "white" }]}>{f}</Text>
+          {vm.filters.map((f) => (
+            <TouchableOpacity key={f} onPress={() => vm.setFilter(f)} style={[styles.filter, vm.filter === f && styles.filterA]}>
+              <Text style={[styles.filterT, vm.filter === f && { color: "white" }]}>{f}</Text>
             </TouchableOpacity>
           ))}
         </View>
         <View style={styles.timeline}>
-          {filtered.length === 0 ? <Text style={styles.empty}>Todavía no tienes citas guardadas.</Text> : null}
-          {filtered.map((c, i) => (
-            <TouchableOpacity key={c.id} style={styles.item} onPress={() => router.push("/detalles-cita")}>
+          {vm.citas.length === 0 ? <Text style={styles.empty}>Todavía no tienes citas guardadas.</Text> : null}
+          {vm.citas.map((c, i) => (
+            <TouchableOpacity key={c.id} style={styles.item} onPress={vm.goToDetalles}>
               <View style={[styles.line, { backgroundColor: c.estado === "Cancelada" ? "#ef4444" : ["#20b26b", "#f59e0b", "#1976d2"][i % 3] }]} />
               <View style={styles.card}>
                 <Text style={styles.name}>Cita médica</Text>
@@ -65,14 +30,17 @@ export default function MisCitas() {
                 <Text style={styles.sub}>{c.fecha || "Fecha pendiente"} · {c.hora || "Hora pendiente"}</Text>
                 <Text style={styles.state}>{c.estado || "Pendiente"}</Text>
                 <View style={styles.actions}>
-                  <TouchableOpacity onPress={() => router.push("/paciente/agendar-cita")}><Text style={styles.modify}>Modificar</Text></TouchableOpacity>
-                  <TouchableOpacity onPress={() => cancelar(c.id)}><Text style={styles.cancel}>Cancelar</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={vm.goToAgendar}><Text style={styles.modify}>Modificar</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={() => vm.handleCancelar(c.id)}><Text style={styles.cancel}>Cancelar</Text></TouchableOpacity>
                 </View>
               </View>
             </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
+      <TouchableOpacity style={styles.fab} onPress={vm.goToAgendar}>
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -97,4 +65,6 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", justifyContent: "flex-end", gap: 18, marginTop: 8 },
   modify: { fontSize: 12, color: "#1976d2", fontWeight: "800" },
   cancel: { fontSize: 12, color: "#ef4444", fontWeight: "800" },
+  fab: { position: "absolute", right: 20, bottom: 24, width: 60, height: 60, borderRadius: 30, backgroundColor: colors.teal, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.22, shadowOffset: { width: 0, height: 10 }, shadowRadius: 12, elevation: 8 },
+  fabText: { color: "white", fontSize: 32, lineHeight: 34, fontWeight: "900" },
 });
