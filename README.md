@@ -59,6 +59,15 @@ npm install
 npx expo start
 ```
 
+## Seguridad y configuración
+
+- No subas archivos con credenciales, tokens ni variables de entorno. El repositorio ignora archivos como `.env` y claves privadas.
+- Si necesitas instalar dependencias de Python para scripts auxiliares, usa:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Usuarios de prueba
 
 | Rol | Correo | Contraseña |
