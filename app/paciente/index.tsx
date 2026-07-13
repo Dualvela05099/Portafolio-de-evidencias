@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { colors } from "@/components/theme";
 import Card from "@/components/Card";
 import LogoutButton from "@/components/LogoutButton";
 import { authService } from "@/services/api/AuthService";
+import { useGPS } from "@/hooks/useGPS";
 
 const motivationalQuotes = [
   "Cada paso cuenta para cuidar tu salud.",
@@ -82,6 +83,13 @@ function UserHome({ greetingName, quote, selectedSpecialty, setSelectedSpecialty
         : doctors,
     [selectedSpecialty]
   );
+  const { width, height } = useWindowDimensions();
+  const { coords, available, refresh, format } = useGPS();
+  const orientation = width > height ? "Horizontal" : "Vertical";
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   return (
     <View style={styles.screen}>
@@ -100,6 +108,25 @@ function UserHome({ greetingName, quote, selectedSpecialty, setSelectedSpecialty
         </View>
 
         <View style={styles.section}>
+          <View style={styles.statusCard}>
+            <View style={styles.statusRow}>
+              <Ionicons name="location-outline" size={18} color={colors.teal} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.statusLabel}>Ubicación actual</Text>
+                <Text style={styles.statusValue}>
+                  {available ? format || "Obteniendo ubicación..." : "GPS no disponible"}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.statusRow}>
+              <Ionicons name={orientation === "Horizontal" ? "phone-landscape-outline" : "phone-portrait-outline"} size={18} color={colors.teal} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.statusLabel}>Orientación de pantalla</Text>
+                <Text style={styles.statusValue}>Pantalla {orientation}</Text>
+              </View>
+            </View>
+          </View>
+
           <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
           <View style={styles.quickRow}>
             <Quick title={'Agendar\nCita'} icon="calendar-outline" bg="#e5f5ff" onPress={()=>router.push('/paciente/agendar-cita')} />
@@ -170,6 +197,10 @@ const styles=StyleSheet.create({
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   section: { paddingHorizontal: 20, marginTop: 22 },
   sectionTitle: { fontSize: 18, fontWeight: '900', color: colors.text, marginBottom: 12 },
+  statusCard: { backgroundColor: 'white', borderRadius: 16, padding: 14, marginBottom: 14, shadowColor: '#000', shadowOpacity: 0.06, shadowOffset: { width: 0, height: 3 }, shadowRadius: 8, elevation: 3 },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  statusLabel: { fontSize: 12, color: colors.muted, fontWeight: '700' },
+  statusValue: { fontSize: 14, color: colors.text, fontWeight: '800', marginTop: 2 },
   quickRow: { flexDirection: 'row', gap: 10 },
   quick: { flex: 1, height: 84, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   selected: { borderWidth: 3, borderColor: '#1c9fe3' },
