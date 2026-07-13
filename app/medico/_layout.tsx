@@ -9,7 +9,7 @@ export default function MedicoLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: "white",
-        tabBarInactiveTintColor: "rgba(255,255,255,0.75)",
+        tabBarInactiveTintColor: "rgba(255,255,255,0.65)",
         tabBarStyle: {
           position: "absolute",
           left: 16,
@@ -21,7 +21,11 @@ export default function MedicoLayout() {
           borderTopWidth: 0,
           paddingTop: 8,
           paddingBottom: 10,
-          elevation: 8,
+          elevation: 10,
+          shadowColor: colors.teal,
+          shadowOpacity: 0.35,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 6 },
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
       }}
