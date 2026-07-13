@@ -1,58 +1,52 @@
-import React, { useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React from "react";
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { colors } from "@/components/theme";
-import { guardarCita, obtenerSesionActual } from "@/utils/database";
+import { colors } from "@/constants/theme";
+import { useAgendarCitaViewModel } from "@/viewmodels/useAgendarCitaViewModel";
 
 export default function Agendar() {
-  const [date, setDate] = useState(10);
-  const [time, setTime] = useState("10:00");
-  const [reason, setReason] = useState("");
-
-  const save = async () => {
-    const sesion = await obtenerSesionActual();
-    await guardarCita({
-      pacienteId: sesion?.id || "",
-      pacienteNombre: sesion?.name || sesion?.nombre || "Paciente",
-      medicoNombre: "Dra. Carmen López",
-      especialidad: "Cardiología",
-      fecha: `${date} de junio de 2026`,
-      hora: time,
-      motivo: reason || "Consulta general",
-      estado: "Pendiente",
-    });
-
-    Alert.alert("Cita agendada", `Tu cita quedó para el ${date} de junio a las ${time}.`, [
-      { text: "Aceptar", onPress: () => router.push("/confirmacion") },
-    ]);
-  };
+  const vm = useAgendarCitaViewModel();
 
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}><Ionicons name="arrow-back" size={22} color="white" /></TouchableOpacity>
+          <TouchableOpacity onPress={vm.goBack}><Ionicons name="arrow-back" size={22} color="white" /></TouchableOpacity>
           <Text style={styles.headerTitle}>Agendar cita</Text>
           <View style={{ width: 22 }} />
         </View>
 
-        <TouchableOpacity style={styles.doctor} onPress={() => Alert.alert("Especialidad", "Cardiología seleccionada.")}>
+        <TouchableOpacity style={styles.doctor} onPress={vm.toggleDoctorList}>
           <View style={styles.avatar} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.doc}>Dra. Carmen López</Text>
-            <Text style={styles.sub}>Cardiología</Text>
+            <Text style={styles.doc}>{vm.selectedDoctor.name}</Text>
+            <Text style={styles.sub}>{vm.selectedDoctor.specialty}</Text>
           </View>
           <Ionicons name="caret-down" size={20} color={colors.teal} />
         </TouchableOpacity>
+
+        {vm.showDoctorList && (
+          <View style={styles.doctorList}>
+            {vm.doctors.map((doc) => (
+              <TouchableOpacity
+                key={doc.id}
+                onPress={() => vm.selectDoctor(doc.id)}
+                style={[styles.doctorOption, vm.selectedDoctor.id === doc.id && styles.doctorOptionActive]}
+              >
+                <Text style={styles.doctorOptionText}>{doc.name}</Text>
+                <Text style={styles.doctorOptionSub}>{doc.specialty}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         <Text style={styles.title}>Selecciona una fecha</Text>
         <View style={styles.calendar}>
           <Text style={styles.month}>Junio 2026</Text>
           <View style={styles.grid}>
             {Array.from({ length: 30 }, (_, i) => i + 1).map((n) => (
-              <TouchableOpacity key={n} onPress={() => setDate(n)} style={[styles.date, date === n && styles.dateActive]}>
-                <Text style={[styles.dateText, date === n && { color: "white" }]}>{n}</Text>
+              <TouchableOpacity key={n} onPress={() => vm.setDate(n)} style={[styles.date, vm.date === n && styles.dateActive]}>
+                <Text style={[styles.dateText, vm.date === n && { color: "white" }]}>{n}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -61,16 +55,16 @@ export default function Agendar() {
         <Text style={styles.title}>Horarios disponibles</Text>
         <View style={styles.times}>
           {["09:00", "09:30", "10:00", "10:30", "11:00", "11:30"].map((t) => (
-            <TouchableOpacity key={t} onPress={() => setTime(t)} style={[styles.time, time === t && styles.timeActive]}>
-              <Text style={[styles.timeText, time === t && { color: "white" }]}>{t}</Text>
+            <TouchableOpacity key={t} onPress={() => vm.setTime(t)} style={[styles.time, vm.time === t && styles.timeActive]}>
+              <Text style={[styles.timeText, vm.time === t && { color: "white" }]}>{t}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         <Text style={styles.title}>Motivo de consulta</Text>
-        <TextInput value={reason} onChangeText={setReason} style={styles.note} multiline placeholder="Describe brevemente el motivo de tu visita..." />
+        <TextInput value={vm.reason} onChangeText={vm.setReason} style={styles.note} multiline placeholder="Describe brevemente el motivo de tu visita..." />
 
-        <TouchableOpacity style={styles.button} onPress={save}><Text style={styles.buttonText}>Agendar cita</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={vm.save}><Text style={styles.buttonText}>Agendar cita</Text></TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -99,4 +93,9 @@ const styles = StyleSheet.create({
   note: { height: 76, backgroundColor: "white", borderRadius: 12, marginHorizontal: 20, padding: 14, textAlignVertical: "top" },
   button: { height: 52, borderRadius: 12, backgroundColor: colors.teal, alignItems: "center", justifyContent: "center", marginHorizontal: 20, marginTop: 18 },
   buttonText: { color: "white", fontWeight: "900" },
+  doctorList: { marginHorizontal: 20, backgroundColor: "white", borderRadius: 18, padding: 10, marginBottom: 12 },
+  doctorOption: { paddingVertical: 12, paddingHorizontal: 14, borderRadius: 14, borderWidth: 1, borderColor: "#e5e7eb", marginBottom: 10, backgroundColor: "#fafbff" },
+  doctorOptionActive: { borderColor: colors.teal, backgroundColor: "#e8f7ff" },
+  doctorOptionText: { fontSize: 14, fontWeight: "900", color: colors.text },
+  doctorOptionSub: { fontSize: 12, color: colors.muted, marginTop: 2 },
 });

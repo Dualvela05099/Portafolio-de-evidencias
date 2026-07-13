@@ -1,0 +1,11 @@
+{
+  "pacienteId": "8c06bdbe-460a-486c-907a-cad36057944b",
+  "pacienteNombre": "María Smith",
+  "medicoId": null,
+  "medicoNombre": "Dr. Carlos López",
+  "especialidad": "Cardiología",
+  "fecha": "2026-07-15",
+  "hora": "14:30",
+  "motivo": "Revisión cardiovascular",
+  "estado": "Pendiente"
+}

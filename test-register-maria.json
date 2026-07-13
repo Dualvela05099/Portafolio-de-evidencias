@@ -1,0 +1,16 @@
+{
+  "email": "maria.smith@clinic.com",
+  "password": "SecurePass123",
+  "nombre": "María Smith",
+  "telefono": "555-9876",
+  "rol": "paciente",
+  "edad": "28",
+  "direccion": "Avenida Principal 456",
+  "sexo": "Femenino",
+  "fechaNacimiento": "1998-05-15",
+  "sangre": "O+",
+  "alergias": "Penicilina",
+  "contactoEmergencia": "Juan Smith",
+  "parentescoEmergencia": "Hermano",
+  "telefonoEmergencia": "555-1111"
+}

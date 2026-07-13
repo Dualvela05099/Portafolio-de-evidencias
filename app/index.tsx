@@ -1,93 +1,11 @@
-import * as LocalAuthentication from "expo-local-authentication";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import AppLogo from "@/components/AppLogo";
-import { colors } from "@/components/theme";
-import { loginUsuario, guardarSesionActual, seedDatabase, obtenerUsuarioDemoPorRol } from "@/utils/database";
-
-type Role = "paciente" | "medico" | "admin";
+import React from "react";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import AppLogo from "@/components/ui/AppLogo";
+import { colors } from "@/constants/theme";
+import { useLoginViewModel } from "@/viewmodels/useLoginViewModel";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Role>("paciente");
-
-  useEffect(() => {
-    seedDatabase();
-  }, []);
-
-  const goHome = () => {
-    if (role === "medico") {
-      router.replace("/medico");
-      return;
-    }
-
-    if (role === "admin") {
-      router.replace("/admin");
-      return;
-    }
-
-    router.replace("/paciente");
-  };
-
-  const handleSubmit = async () => {
-    if (email.trim() === "" || password.trim() === "") {
-      Alert.alert("Campos vacíos", "Ingresa tu correo y contraseña.");
-      return;
-    }
-
-    const usuario = await loginUsuario(email, password, role);
-
-    if (!usuario) {
-      Alert.alert(
-        "Datos incorrectos",
-        "Revisa que el correo, contraseña y rol sean correctos.\n\nUsuarios de prueba:\nPaciente: paciente@gmail.com / 123456\nDoctor: doctor@gmail.com / 123456\nAdmin: admin@gmail.com / 123456"
-      );
-      return;
-    }
-
-    await guardarSesionActual(usuario);
-    goHome();
-  };
-
-  const handleFingerprintLogin = async () => {
-    try {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-
-      if (!hasHardware) {
-        Alert.alert("No disponible", "Este dispositivo no tiene sensor biométrico.");
-        return;
-      }
-
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-
-      if (!isEnrolled) {
-        Alert.alert("Huella no configurada", "Primero configura una huella digital en tu teléfono.");
-        return;
-      }
-
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: "Inicia sesión con tu huella",
-        cancelLabel: "Cancelar",
-        fallbackLabel: "Usar contraseña",
-        disableDeviceFallback: false,
-      });
-
-      if (result.success) {
-        const usuario = await obtenerUsuarioDemoPorRol(role);
-        if (usuario) {
-          await guardarSesionActual(usuario);
-        }
-        goHome();
-      } else {
-        Alert.alert("Acceso cancelado", "No se pudo iniciar sesión con la huella.");
-      }
-    } catch (error) {
-      Alert.alert("Error", "Ocurrió un problema con la autenticación biométrica.");
-      console.log(error);
-    }
-  };
+  const vm = useLoginViewModel();
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -105,8 +23,8 @@ export default function LoginScreen() {
 
             <View style={styles.roles}>
               {(["paciente", "medico", "admin"] as const).map((item) => (
-                <TouchableOpacity key={item} onPress={() => setRole(item)} style={[styles.roleButton, role === item && styles.roleButtonActive]}>
-                  <Text style={[styles.roleText, role === item && styles.roleTextActive]}>
+                <TouchableOpacity key={item} onPress={() => vm.setRole(item)} style={[styles.roleButton, vm.role === item && styles.roleButtonActive]}>
+                  <Text style={[styles.roleText, vm.role === item && styles.roleTextActive]}>
                     {item === "paciente" ? "Paciente" : item === "medico" ? "Doctor" : "Admin"}
                   </Text>
                 </TouchableOpacity>
@@ -116,23 +34,23 @@ export default function LoginScreen() {
             <Text style={styles.helperText}>Selecciona el rol y después inicia sesión o usa la huella.</Text>
 
             <Text style={styles.label}>Correo electrónico</Text>
-            <TextInput placeholder="Ingresa tu correo electrónico" value={email} onChangeText={setEmail} style={styles.input} keyboardType="email-address" autoCapitalize="none" />
+            <TextInput placeholder="Ingresa tu correo electrónico" value={vm.email} onChangeText={vm.setEmail} style={styles.input} keyboardType="email-address" autoCapitalize="none" />
 
             <Text style={styles.label}>Contraseña</Text>
-            <TextInput placeholder="Ingresa tu contraseña" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
+            <TextInput placeholder="Ingresa tu contraseña" value={vm.password} onChangeText={vm.setPassword} secureTextEntry style={styles.input} />
 
-            <TouchableOpacity onPress={handleSubmit} style={styles.button}>
+            <TouchableOpacity onPress={vm.submit} style={styles.button}>
               <Text style={styles.buttonText}>Iniciar sesión</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleFingerprintLogin} style={styles.fingerprintButton}>
+            <TouchableOpacity onPress={vm.loginWithBiometric} style={styles.fingerprintButton}>
               <Text style={styles.fingerprintIcon}>🔒</Text>
               <Text style={styles.fingerprintText}>Entrar con huella digital</Text>
             </TouchableOpacity>
 
             <View style={styles.registerContainer}>
               <Text style={styles.registerText}>¿No tienes cuenta? </Text>
-              <TouchableOpacity onPress={() => router.push("/register")}>
+              <TouchableOpacity onPress={vm.goToRegister}>
                 <Text style={styles.registerLink}>Regístrate aquí</Text>
               </TouchableOpacity>
             </View>

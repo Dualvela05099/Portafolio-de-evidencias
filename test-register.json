@@ -1,0 +1,9 @@
+{
+  "email": "test.user@gmail.com",
+  "password": "123456",
+  "nombre": "Test User",
+  "telefono": "555-1234",
+  "rol": "paciente",
+  "edad": "25",
+  "direccion": "Calle Test 123"
+}

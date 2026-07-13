@@ -28,10 +28,11 @@
         {
           "cameraPermission": "Permitir que Utopía use la cámara para escanear y fotografiar recetas médicas."
         }
-      ]
+      ],
+      "expo-status-bar"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": false
     }
   }
 }
